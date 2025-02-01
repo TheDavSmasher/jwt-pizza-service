@@ -8,26 +8,33 @@ beforeAll(async () => {
   testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
   const registerRes = await request(app).post('/api/auth').send(testUser);
   testUserAuthToken = registerRes.body.token;
+  expectValidJwt(testUserAuthToken);
 });
 
 test('register', async () => {
-    const user = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
-    user.email = Math.random().toString(36).substring(2, 12) + '@test.com';
-    const regRes = await request(app).post('/api/auth').send(user);
+    const regUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
+    regUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
+    const regRes = await request(app).post('/api/auth').send(regUser);
     expect(regRes.status).toBe(200);
-    expect(regRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+    expectValidJwt(regRes.body.token);
 
-    //const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
-    //expect(regRes.body.user).toMatchObject(user);
+    const { ...user } = { ...regUser, roles: [{ role: 'diner' }] };
+    delete user.password;
+    expect(regRes.body.user).toMatchObject(user);
 });
 
 test('login', async () => {
   const loginRes = await request(app).put('/api/auth').send(testUser);
   expect(loginRes.status).toBe(200);
-  expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+  expectValidJwt(loginRes.body.token);
 
-  const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
+  const { ...user } = { ...testUser, roles: [{ role: 'diner' }] };
+  delete user.password;
   expect(loginRes.body.user).toMatchObject(user);
 });
+
+function expectValidJwt(potentialJwt) {
+  expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+}
 
 //login multiple
