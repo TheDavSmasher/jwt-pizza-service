@@ -23,15 +23,16 @@ test('franchise lifecycle', async () => {
     const result = await request(app).post('/api/franchise')
         .set('Authorization', `Bearer ${adminAuthToken}`).send(newFranchise);
     expect(result.status).toBe(200);
-    const franchiseId = result.body.id;
-    expect(result.body).toMatchObject({ admins: [{ email: adminUser.email, id: adminUser.id, name: adminUser.name }], id: franchiseId, name: franchiseName});
+
+    const createdFranchise = { id: result.body.id, name: franchiseName, admins: [{ email: adminUser.email, id: adminUser.id, name: adminUser.name }] };
+    expect(result.body).toMatchObject(createdFranchise);
 
     const fetchFranchise = await request(app).get(`/api/franchise/${adminUser.id}`)
         .set('Authorization', `Bearer ${adminAuthToken}`).send();
     expect(fetchFranchise.status).toBe(200);
-    expect(fetchFranchise.body).toMatchObject([{ id: franchiseId, name: franchiseName, admins: [{ email: adminUser.email, id: adminUser.id, name: adminUser.name }] }]);
+    expect(fetchFranchise.body).toMatchObject([createdFranchise]);
 
-    const deleteFranch = await request(app).delete(`/api/franchise/${franchiseId}`)
+    const deleteFranch = await request(app).delete(`/api/franchise/${createdFranchise.id}`)
         .set('Authorization', `Bearer ${adminAuthToken}`).send();
     expect(deleteFranch.status).toBe(200);
     expect(deleteFranch.body.message).toBe('franchise deleted');
