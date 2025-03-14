@@ -74,7 +74,7 @@ function getMemoryUsagePercentage() {
 }
 
 // This will periodically send metrics to Grafana
-const timer = setInterval(() => {
+setInterval(() => {
   const builder = new MetricBuilder();
 
   builder.addMetrics('requests', requests);
@@ -90,12 +90,6 @@ const timer = setInterval(() => {
 
   sendToGrafana(builder.getAllMetrics(), 'all');
 }, 1000);
-
-function sendMetricToGrafana(metricName, metricValue, attributes) {
-  const metric = getMetricsBody(getSingleMetric(metricName, metricValue, attributes));
-
-  sendToGrafana(metric, metricName);
-}
 
 function getMetricsBody(...allMetrics) {
   const metrics = {
