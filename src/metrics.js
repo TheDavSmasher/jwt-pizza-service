@@ -6,14 +6,14 @@ class MetricBuilder {
     this.metrics = [];
   }
 
-  addMetrics(metricName, source, type) {
+  addMetrics(metricName, source, type, unit) {
     Object.keys(source).forEach((key) => {
-      this.addNewMetric(metricName, source[key], type, { key });
+      this.addNewMetric(metricName, source[key], type, unit, { key });
     });
   }
 
-  addNewMetric(metricName, metricValue, type, attributes) {
-    this.metrics.push(getSingleMetric(metricName, metricValue, type, attributes))
+  addNewMetric(metricName, metricValue, type, unit, attributes) {
+    this.metrics.push(getSingleMetric(metricName, metricValue, type, unit, attributes))
   }
 
   getAllMetrics() {
@@ -77,13 +77,13 @@ function getMemoryUsagePercentage() {
 setInterval(() => {
   const builder = new MetricBuilder();
 
-  builder.addMetrics('requests', requests, 'sum');
-  builder.addMetrics('authentication', authentication, 'sum');
-  builder.addNewMetric('cpu', getCpuUsagePercentage(), 'gauge');
-  builder.addNewMetric('memory', getMemoryUsagePercentage(), 'gauge');
-  builder.addMetrics('pizzas', pizzas, 'sum');
+  builder.addMetrics('requests', requests, 'sum', '1');
+  builder.addMetrics('authentication', authentication, 'sum', '1');
+  builder.addNewMetric('cpu', getCpuUsagePercentage(), 'gauge', '%');
+  builder.addNewMetric('memory', getMemoryUsagePercentage(), 'gauge', '%');
+  builder.addMetrics('pizzas', pizzas, 'sum', '1');
   Object.keys(latency).forEach((key) => {
-    builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length, 'sum', { key });
+    builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length, 'sum', 'ms', { key });
     latency[key] = [];
   });
 
@@ -110,12 +110,12 @@ function getMetricsBody(...allMetrics) {
   return metrics;
 }
 
-function getSingleMetric(metricName, metricValue, type, attributes) {
+function getSingleMetric(metricName, metricValue, type, unit, attributes) {
   attributes = { ...attributes, source: config.source }
 
   const metric = {
     name: metricName,
-    unit: '1',
+    unit: unit,
     [type]: {
       dataPoints: [
         {
