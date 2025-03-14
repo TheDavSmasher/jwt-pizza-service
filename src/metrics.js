@@ -1,6 +1,26 @@
 const config = require('./config');
 const os = require('os');
 
+class MetricBuilder {
+  constructor() {
+    this.metrics = [];
+  }
+
+  addMetrics(metricName, source) {
+    Object.keys(source).forEach((key) => {
+      this.addNewMetric(metricName, source[key], { key });
+    });
+  }
+
+  addNewMetric(metricName, metricValue, attributes) {
+    this.metrics.push(getSingleMetric(metricName, metricValue, attributes))
+  }
+
+  getAllMetrics() {
+    return getMetricsBody(this.metrics);
+  }
+}
+
 const requests = {};
 const authentication = {};
 const pizzas = {};
@@ -54,10 +74,22 @@ function getMemoryUsagePercentage() {
 
 // This will periodically send metrics to Grafana
 const timer = setInterval(() => {
-  Object.keys(requests).forEach((endpoint) => {
-    sendMetricToGrafana('requests', requests[endpoint], { endpoint });
-  });
+  const builder = new MetricBuilder();
+
+  builder.addMetrics('requests', requests);
+  builder.addMetrics('authentication', authentication);
+  builder.addMetrics('pizzas', pizzas);
+  builder.addNewMetric('cpu', getCpuUsagePercentage());
+  builder.addNewMetric('memory', getMemoryUsagePercentage());
+
+  sendToGrafana(builder.getAllMetrics(), 'all');
 }, 10000);
+
+function sendMetricToGrafana(metricName, metricValue, attributes) {
+  const metric = getMetricsBody(getSingleMetric(metricName, metricValue, attributes));
+
+  sendToGrafana(metric, metricName);
+}
 
 function getMetricsBody(...allMetrics) {
   const metrics = {
@@ -106,12 +138,6 @@ function getSingleMetric(metricName, metricValue, attributes) {
   });
 
   return metric;
-}
-
-function sendMetricToGrafana(metricName, metricValue, attributes) {
-  const metric = getMetricsBody(getSingleMetric(metricName, metricValue, attributes));
-
-  sendToGrafana(metric, metricName);
 }
 
 function sendToGrafana(metric, metricName) {
