@@ -53,7 +53,7 @@ function trackPizza(metric, value) {
 }
 
 function trackLatency(key, time) {
-  latency[key] = [...latency[key], time];
+  latency[key] = [...latency[key] ?? [], time];
 }
 
 function updateMetric(metric, key, value) {
@@ -74,7 +74,7 @@ function getMemoryUsagePercentage() {
 }
 
 // This will periodically send metrics to Grafana
-const timer = setInterval(() => {
+/*const timer = setInterval(() => {
   const builder = new MetricBuilder();
 
   builder.addMetrics('requests', requests);
@@ -85,7 +85,7 @@ const timer = setInterval(() => {
   builder.addMetrics('latency', latency);
 
   sendToGrafana(builder.getAllMetrics(), 'all');
-}, 10000);
+}, 10000);*/
 
 function sendMetricToGrafana(metricName, metricValue, attributes) {
   const metric = getMetricsBody(getSingleMetric(metricName, metricValue, attributes));
@@ -143,10 +143,10 @@ function getSingleMetric(metricName, metricValue, attributes) {
 }
 
 function sendToGrafana(metric, metricName) {
-  fetch(`${config.url}`, {
+  fetch(`${config.metrics.url}`, {
     method: 'POST',
     body: JSON.stringify(metric),
-    headers: { Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${config.metrics.apiKey}`, 'Content-Type': 'application/json' },
   })
     .then((response) => {
       if (!response.ok) {
