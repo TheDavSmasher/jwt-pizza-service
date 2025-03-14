@@ -127,12 +127,14 @@ authRouter.put(
 async function setAuth(user) {
   const token = jwt.sign(user, config.jwtSecret);
   await DB.loginUser(user.id, token);
+  metrics.trackActive(true);
   return token;
 }
 
 async function clearAuth(req) {
   const token = readAuthToken(req);
   if (token) {
+    metrics.trackActive(false);
     await DB.logoutUser(token);
   }
 }

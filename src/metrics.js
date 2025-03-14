@@ -2,7 +2,7 @@ const config = require('./config');
 const os = require('os');
 
 const requests = {};
-const authAttempts = {};
+const authentication = {};
 
 function track(endpoint) {
   return (req, res, next) => {
@@ -13,7 +13,12 @@ function track(endpoint) {
 
 function trackAuth(success) {
   let key = success ? 'success' : 'failure' ;
-  authAttempts[key] = (authAttempts[key] || 0) + 1;
+  authentication[key] = (authentication[key] || 0) + 1;
+}
+
+function trackActive(active) {
+  let key = 'active';
+  authentication[key] = (authentication[key] || 0) + (active ? 1 : -1);
 }
 
 function getCpuUsagePercentage() {
@@ -91,4 +96,4 @@ function sendMetricToGrafana(metricName, metricValue, attributes) {
     });
 }
 
-module.exports = { track, trackAuth };
+module.exports = { track, trackAuth, trackActive };
