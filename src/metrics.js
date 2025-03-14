@@ -17,7 +17,7 @@ class MetricBuilder {
   }
 
   getAllMetrics() {
-    return getMetricsBody(this.metrics);
+    return getMetricsBody(...this.metrics);
   }
 }
 
@@ -111,7 +111,7 @@ function getMetricsBody(...allMetrics) {
 }
 
 function getSingleMetric(metricName, metricValue, type, unit, attributes) {
-  attributes = { ...attributes, source: config.source }
+  attributes = { ...attributes, source: config.metrics.source }
 
   const metric = {
     name: metricName,
@@ -119,7 +119,7 @@ function getSingleMetric(metricName, metricValue, type, unit, attributes) {
     [type]: {
       dataPoints: [
         {
-          asInt: metricValue,
+          asDouble: metricValue,
           timeUnixNano: Date.now() * 1000000,
           attributes: [],
         },
@@ -143,14 +143,17 @@ function getSingleMetric(metricName, metricValue, type, unit, attributes) {
 }
 
 function sendToGrafana(metric, metricName) {
+  const body = JSON.stringify(metric);
   fetch(`${config.metrics.url}`, {
     method: 'POST',
-    body: JSON.stringify(metric),
+    body: body,
     headers: { Authorization: `Bearer ${config.metrics.apiKey}`, 'Content-Type': 'application/json' },
   })
     .then((response) => {
       if (!response.ok) {
-        console.error('Failed to push metrics data to Grafana');
+        response.text().then((text) => {
+          console.error(`Failed to push metrics data to Grafana: ${text}\n${body}`);
+        });
       } else {
         console.log(`Pushed ${metricName}`);
       }
