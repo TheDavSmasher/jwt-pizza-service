@@ -24,6 +24,7 @@ class MetricBuilder {
 const requests = {};
 const authentication = {};
 const pizzas = {};
+const latency = {};
 
 function track(endpoint) {
   return (req, res, next) => {
@@ -52,7 +53,7 @@ function trackPizza(metric, value) {
 }
 
 function trackLatency(key, time) {
-  //sendMetricToGrafana(key, value, )
+  latency[key] = [...latency[key], time];
 }
 
 function updateMetric(metric, key, value) {
@@ -81,6 +82,7 @@ const timer = setInterval(() => {
   builder.addNewMetric('cpu', getCpuUsagePercentage());
   builder.addNewMetric('memory', getMemoryUsagePercentage());
   builder.addMetrics('pizzas', pizzas);
+  builder.addMetrics('latency', latency);
 
   sendToGrafana(builder.getAllMetrics(), 'all');
 }, 10000);
