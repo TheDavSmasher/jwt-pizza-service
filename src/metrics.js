@@ -78,9 +78,9 @@ const timer = setInterval(() => {
 
   builder.addMetrics('requests', requests);
   builder.addMetrics('authentication', authentication);
-  builder.addMetrics('pizzas', pizzas);
   builder.addNewMetric('cpu', getCpuUsagePercentage());
   builder.addNewMetric('memory', getMemoryUsagePercentage());
+  builder.addMetrics('pizzas', pizzas);
 
   sendToGrafana(builder.getAllMetrics(), 'all');
 }, 10000);
