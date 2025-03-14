@@ -13,7 +13,8 @@ class MetricBuilder {
   }
 
   addNewMetric(metricName, metricValue, type, unit, attributes) {
-    this.metrics.push(getSingleMetric(metricName, metricValue, type, unit, attributes))
+    const value =(!metricValue || isNaN(metricValue)) ? 0 : metricValue;
+    this.metrics.push(getSingleMetric(metricName, value, type, unit, attributes))
   }
 
   getAllMetrics() {
@@ -83,7 +84,7 @@ setInterval(() => {
   builder.addNewMetric('memory', getMemoryUsagePercentage(), 'gauge', '%');
   builder.addMetrics('pizzas', pizzas, 'sum', '1');
   Object.keys(latency).forEach((key) => {
-    builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length ?? 0, 'sum', 'ms', { key });
+    builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length, 'sum', 'ms', { key });
     latency[key] = [];
   });
 
