@@ -82,11 +82,19 @@ authRouter.post(
 authRouter.put(
   '/', metrics.track('post'),
   asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-    const user = await DB.getUser(email, password);
-    const auth = await setAuth(user);
-    res.json({ user: user, token: auth });
-  })
+    let success = true;
+    try {
+      const { email, password } = req.body;
+      const user = await DB.getUser(email, password);
+      const auth = await setAuth(user);
+      res.json({ user: user, token: auth });
+    } catch(err) {
+      success = false;
+      throw err;
+    } finally {
+      metrics.trackAuth(success);
+    }
+  }),
 );
 
 // logout

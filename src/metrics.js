@@ -1,12 +1,32 @@
 const config = require('./config');
+const os = require('os');
 
 const requests = {};
+const authAttempts = {};
 
 function track(endpoint) {
   return (req, res, next) => {
     requests[endpoint] = (requests[endpoint] || 0) + 1;
     next();
   };
+}
+
+function trackAuth(success) {
+  let key = success ? 'success' : 'failure' ;
+  authAttempts[key] = (authAttempts[key] || 0) + 1;
+}
+
+function getCpuUsagePercentage() {
+  const cpuUsage = os.loadavg()[0] / os.cpus().length;
+  return cpuUsage.toFixed(2) * 100;
+}
+
+function getMemoryUsagePercentage() {
+  const totalMemory = os.totalmem();
+  const freeMemory = os.freemem();
+  const usedMemory = totalMemory - freeMemory;
+  const memoryUsage = (usedMemory / totalMemory) * 100;
+  return memoryUsage.toFixed(2);
 }
 
 // This will periodically send metrics to Grafana
@@ -71,4 +91,4 @@ function sendMetricToGrafana(metricName, metricValue, attributes) {
     });
 }
 
-module.exports = { track };
+module.exports = { track, trackAuth };
