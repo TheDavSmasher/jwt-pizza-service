@@ -4,7 +4,6 @@ const os = require('os');
 const requests = {};
 const authentication = {};
 const pizzas = {};
-const latency = {};
 
 function track(endpoint) {
   return (req, res, next) => {
@@ -33,7 +32,7 @@ function trackPizza(metric, value) {
 }
 
 function trackLatency(key, time) {
-  updateMetric(latency, key, time);
+  //sendMetricToGrafana(key, value, )
 }
 
 function updateMetric(metric, key, value) {
@@ -60,44 +59,62 @@ const timer = setInterval(() => {
   });
 }, 10000);
 
-function sendMetricToGrafana(metricName, metricValue, attributes) {
-  attributes = { ...attributes, source: config.source };
-
-  const metric = {
+function getMetricsBody(...allMetrics) {
+  const metrics = {
     resourceMetrics: [
       {
         scopeMetrics: [
           {
-            metrics: [
-              {
-                name: metricName,
-                unit: '1',
-                sum: {
-                  dataPoints: [
-                    {
-                      asInt: metricValue,
-                      timeUnixNano: Date.now() * 1000000,
-                      attributes: [],
-                    },
-                  ],
-                  aggregationTemporality: 'AGGREGATION_TEMPORALITY_CUMULATIVE',
-                  isMonotonic: true,
-                },
-              },
-            ],
+            metrics: []
           },
         ],
       },
     ],
   };
 
+  allMetrics.forEach((metric) => {
+    metrics.resourceMetrics[0].scopeMetrics[0].metrics.push(metric);
+  });
+
+  return metrics;
+}
+
+function getSingleMetric(metricName, metricValue, attributes) {
+  attributes = { ...attributes, source: config.source }
+
+  const metric = {
+    name: metricName,
+    unit: '1',
+    sum: {
+      dataPoints: [
+        {
+          asInt: metricValue,
+          timeUnixNano: Date.now() * 1000000,
+          attributes: [],
+        },
+      ],
+      aggregationTemporality: 'AGGREGATION_TEMPORALITY_CUMULATIVE',
+      isMonotonic: true,
+    },
+  };
+
   Object.keys(attributes).forEach((key) => {
-    metric.resourceMetrics[0].scopeMetrics[0].metrics[0].sum.dataPoints[0].attributes.push({
+    metric.sum.dataPoints[0].attributes.push({
       key: key,
       value: { stringValue: attributes[key] },
     });
   });
 
+  return metric;
+}
+
+function sendMetricToGrafana(metricName, metricValue, attributes) {
+  const metric = getMetricsBody(getSingleMetric(metricName, metricValue, attributes));
+
+  sendToGrafana(metric, metricName);
+}
+
+function sendToGrafana(metric, metricName) {
   fetch(`${config.url}`, {
     method: 'POST',
     body: JSON.stringify(metric),
