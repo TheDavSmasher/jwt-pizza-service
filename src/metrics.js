@@ -3,22 +3,30 @@ const os = require('os');
 
 const requests = {};
 const authentication = {};
+const pizzas = {};
 
 function track(endpoint) {
   return (req, res, next) => {
-    requests[endpoint] = (requests[endpoint] || 0) + 1;
+    updateMetric(requests, endpoint);
     next();
   };
 }
 
 function trackAuth(success) {
   let key = success ? 'success' : 'failure' ;
-  authentication[key] = (authentication[key] || 0) + 1;
+  updateMetric(authentication, key);
 }
 
 function trackActive(active) {
-  let key = 'active';
-  authentication[key] = (authentication[key] || 0) + (active ? 1 : -1);
+  updateMetric(authentication, 'active', (active ? 1 : -1))
+}
+
+function trackPizza(metric, value) {
+  updateMetric(pizzas, metric, value);
+}
+
+function updateMetric(metric, key, value) {
+  metric[key] = (metric[key] || 0) + (value ?? 1);
 }
 
 function getCpuUsagePercentage() {
@@ -96,4 +104,4 @@ function sendMetricToGrafana(metricName, metricValue, attributes) {
     });
 }
 
-module.exports = { track, trackAuth, trackActive };
+module.exports = { track, trackAuth, trackActive, trackPizza };

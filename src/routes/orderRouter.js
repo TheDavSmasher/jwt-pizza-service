@@ -87,8 +87,13 @@ orderRouter.post(
     });
     const j = await r.json();
     if (r.ok) {
+      const sold = order.items.length;
+      metrics.trackPizza('sold', sold);
+      const revenue = order.items.reduce((partial, a) => partial + a.price, 0);
+      metrics.trackPizza('revenue', revenue);
       res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
     } else {
+      metrics.trackPizza('fail');
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
     }
   })
