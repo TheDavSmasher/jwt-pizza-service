@@ -81,7 +81,7 @@ authRouter.post(
 
 // login
 authRouter.put(
-  '/', metrics.track('post'),
+  '/', metrics.track('put'),
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
