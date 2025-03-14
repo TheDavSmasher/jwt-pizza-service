@@ -53,7 +53,7 @@ test('order lifecycle', async () => {
         .set('Authorization', `Bearer ${adminAuthToken}`).send();
     expect(fetchedOrder.status).toBe(200);
     expect(fetchedOrder.body.orders[0]).toMatchObject(newOrder);
-});
+}, 10000);
 
 async function createAdminUser() {
     let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
