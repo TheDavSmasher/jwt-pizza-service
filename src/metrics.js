@@ -4,6 +4,7 @@ const os = require('os');
 const requests = {};
 const authentication = {};
 const pizzas = {};
+const latency = {};
 
 function track(endpoint) {
   return (req, res, next) => {
@@ -12,9 +13,15 @@ function track(endpoint) {
   };
 }
 
-function trackAuth(success) {
-  let key = success ? 'success' : 'failure' ;
-  updateMetric(authentication, key);
+function trackFail() {
+  return (err, req, res, next) => {
+    updateMetric(authentication, 'fail');
+    next(err);
+  }
+}
+
+function trackSuccess() {
+  updateMetric(authentication, 'success');
 }
 
 function trackActive(active) {
@@ -23,6 +30,10 @@ function trackActive(active) {
 
 function trackPizza(metric, value) {
   updateMetric(pizzas, metric, value);
+}
+
+function trackLatency(key, time) {
+  updateMetric(latency, key, time);
 }
 
 function updateMetric(metric, key, value) {
@@ -104,4 +115,4 @@ function sendMetricToGrafana(metricName, metricValue, attributes) {
     });
 }
 
-module.exports = { track, trackAuth, trackActive, trackPizza };
+module.exports = { track, trackSuccess, trackFail, trackActive, trackPizza, trackLatency };

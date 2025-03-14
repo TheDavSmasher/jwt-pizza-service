@@ -75,26 +75,20 @@ authRouter.post(
     const user = await DB.addUser({ name, email, password, roles: [{ role: Role.Diner }] });
     const auth = await setAuth(user);
     res.json({ user: user, token: auth });
-  })
+  }),
+  metrics.trackFail()
 );
 
 // login
 authRouter.put(
   '/', metrics.track('post'),
   asyncHandler(async (req, res) => {
-    let success = true;
-    try {
-      const { email, password } = req.body;
-      const user = await DB.getUser(email, password);
-      const auth = await setAuth(user);
-      res.json({ user: user, token: auth });
-    } catch(err) {
-      success = false;
-      throw err;
-    } finally {
-      metrics.trackAuth(success);
-    }
+    const { email, password } = req.body;
+    const user = await DB.getUser(email, password);
+    const auth = await setAuth(user);
+    res.json({ user: user, token: auth });
   }),
+  metrics.trackFail()
 );
 
 // logout
@@ -128,6 +122,7 @@ async function setAuth(user) {
   const token = jwt.sign(user, config.jwtSecret);
   await DB.loginUser(user.id, token);
   metrics.trackActive(true);
+  metrics.trackSuccess();
   return token;
 }
 
