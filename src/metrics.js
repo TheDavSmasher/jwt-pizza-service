@@ -82,10 +82,14 @@ const timer = setInterval(() => {
   builder.addNewMetric('cpu', getCpuUsagePercentage());
   builder.addNewMetric('memory', getMemoryUsagePercentage());
   builder.addMetrics('pizzas', pizzas);
+  Object.keys(latency).forEach((key) => {
+    builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length, { key });
+    latency[key] = [];
+  });
   builder.addMetrics('latency', latency);
 
   sendToGrafana(builder.getAllMetrics(), 'all');
-}, 10000);
+}, 1000);
 
 function sendMetricToGrafana(metricName, metricValue, attributes) {
   const metric = getMetricsBody(getSingleMetric(metricName, metricValue, attributes));
