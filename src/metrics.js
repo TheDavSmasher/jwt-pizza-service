@@ -6,14 +6,14 @@ class MetricBuilder {
     this.metrics = [];
   }
 
-  addMetrics(metricName, source) {
+  addMetrics(metricName, source, type) {
     Object.keys(source).forEach((key) => {
-      this.addNewMetric(metricName, source[key], { key });
+      this.addNewMetric(metricName, source[key], type, { key });
     });
   }
 
-  addNewMetric(metricName, metricValue, attributes) {
-    this.metrics.push(getSingleMetric(metricName, metricValue, attributes))
+  addNewMetric(metricName, metricValue, type, attributes) {
+    this.metrics.push(getSingleMetric(metricName, metricValue, type, attributes))
   }
 
   getAllMetrics() {
@@ -77,16 +77,15 @@ function getMemoryUsagePercentage() {
 setInterval(() => {
   const builder = new MetricBuilder();
 
-  builder.addMetrics('requests', requests);
-  builder.addMetrics('authentication', authentication);
-  builder.addNewMetric('cpu', getCpuUsagePercentage());
-  builder.addNewMetric('memory', getMemoryUsagePercentage());
-  builder.addMetrics('pizzas', pizzas);
+  builder.addMetrics('requests', requests, 'sum');
+  builder.addMetrics('authentication', authentication, 'sum');
+  builder.addNewMetric('cpu', getCpuUsagePercentage(), 'gauge');
+  builder.addNewMetric('memory', getMemoryUsagePercentage(), 'gauge');
+  builder.addMetrics('pizzas', pizzas, 'sum');
   Object.keys(latency).forEach((key) => {
-    builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length, { key });
+    builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length, 'sum', { key });
     latency[key] = [];
   });
-  builder.addMetrics('latency', latency);
 
   sendToGrafana(builder.getAllMetrics(), 'all');
 }, 1000);
@@ -111,27 +110,30 @@ function getMetricsBody(...allMetrics) {
   return metrics;
 }
 
-function getSingleMetric(metricName, metricValue, attributes) {
+function getSingleMetric(metricName, metricValue, type, attributes) {
   attributes = { ...attributes, source: config.source }
 
   const metric = {
     name: metricName,
     unit: '1',
-    sum: {
+    [type]: {
       dataPoints: [
         {
           asInt: metricValue,
           timeUnixNano: Date.now() * 1000000,
           attributes: [],
         },
-      ],
-      aggregationTemporality: 'AGGREGATION_TEMPORALITY_CUMULATIVE',
-      isMonotonic: true,
+      ]
     },
   };
 
+  if (type == 'sum') {
+    metric[type].aggregationTemporality = 'AGGREGATION_TEMPORALITY_CUMULATIVE';
+    metric[type].isMonotonic = true;
+  }
+
   Object.keys(attributes).forEach((key) => {
-    metric.sum.dataPoints[0].attributes.push({
+    metric[type].dataPoints[0].attributes.push({
       key: key,
       value: { stringValue: attributes[key] },
     });
