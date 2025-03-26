@@ -292,9 +292,9 @@ class DB {
   }
 
   async getID(connection, key, value, table) {
-    const [rows] = await this.query(connection, `SELECT id FROM ${table} WHERE ${key}=?`, [value]);
-    if (rows.length > 0) {
-      return rows[0].id;
+    const [result] = await this.query(connection, `SELECT id FROM ${table} WHERE ${key}=?`, [value]);
+    if (result !== undefined) {
+      return result.id;
     }
     throw new Error('No ID found');
   }
@@ -351,7 +351,7 @@ class DB {
 
   async checkDatabaseExists(connection) {
     const [rows] = await this.query(connection, `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?`, [config.db.connection.database]);
-    return rows.length > 0;
+    return rows.schema !== undefined;
   }
 }
 
