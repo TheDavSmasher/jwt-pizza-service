@@ -24,6 +24,10 @@ class Logger {
     this._log('info', 'db', query);
   }
 
+  errorLogger(err) {
+    this._log('error', 'server', { message: err.message, stack: err.stack })
+  };
+
   _log(level, type, logData) {
     const labels = { component: config.logging.source, level: level, type: type };
     const values = [this._nowString(), this._sanitize(logData)];
