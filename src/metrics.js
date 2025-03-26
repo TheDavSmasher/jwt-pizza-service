@@ -87,7 +87,7 @@ setInterval(() => {
     latency[key] = [];
   });
 
-  sendToGrafana(builder.getAllMetrics(), 'all');
+  sendToGrafana(builder.getAllMetrics());
 }, 1000);
 
 function getMetricsBody(...allMetrics) {
@@ -142,7 +142,7 @@ function getSingleMetric(metricName, metricValue, type, unit, attributes) {
   return metric;
 }
 
-function sendToGrafana(metric, metricName) {
+function sendToGrafana(metric) {
   const body = JSON.stringify(metric);
   fetch(`${config.metrics.url}`, {
     method: 'POST',
