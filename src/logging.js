@@ -9,8 +9,8 @@ class Logger {
         path: req.originalUrl,
         method: req.method,
         statusCode: res.statusCode,
-        reqBody: JSON.stringify(req.body),
-        resBody: JSON.stringify(resBody),
+        req: JSON.stringify(req.body),
+        res: JSON.stringify(resBody),
       };
       const level = this._statusToLogLevel(res.statusCode);
       this._log(level, 'http', logData);
@@ -21,7 +21,17 @@ class Logger {
   };
 
   dbLogger(query) {
-    this._log('info', 'db', query);
+    this._log('info', 'db', { req: query });
+  }
+
+  factoryLogger(reqBody, resBody, statusCode) {
+    const logData = {
+      statusCode: statusCode,
+      req: JSON.stringify(reqBody),
+      res: JSON.stringify(resBody)
+    };
+    const level = this._statusToLogLevel(statusCode);
+    this._log(level, 'factory', logData);
   }
 
   errorLogger(err) {
