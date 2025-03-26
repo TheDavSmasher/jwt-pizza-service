@@ -66,8 +66,7 @@ authRouter.authenticateToken = (req, res, next) => {
 
 // register
 authRouter.post(
-  '/', metrics.track('post'),
-  asyncHandler(async (req, res) => {
+  '/', asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'name, email, and password are required' });
@@ -81,8 +80,7 @@ authRouter.post(
 
 // login
 authRouter.put(
-  '/', metrics.track('put'),
-  asyncHandler(async (req, res) => {
+  '/', asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
     const auth = await setAuth(user);
@@ -93,8 +91,7 @@ authRouter.put(
 
 // logout
 authRouter.delete(
-  '/', metrics.track('delete'),
-  authRouter.authenticateToken,
+  '/', authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     await clearAuth(req);
     res.json({ message: 'logout successful' });
@@ -103,8 +100,7 @@ authRouter.delete(
 
 // updateUser
 authRouter.put(
-  '/:userId', metrics.track('put'),
-  authRouter.authenticateToken,
+  '/:userId', authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const userId = Number(req.params.userId);
