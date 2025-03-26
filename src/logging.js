@@ -20,6 +20,10 @@ class Logger {
     next();
   };
 
+  dbLogger(query) {
+    this._log('info', 'db', query);
+  }
+
   _log(level, type, logData) {
     const labels = { component: config.logging.source, level: level, type: type };
     const values = [this._nowString(), this._sanitize(logData)];
