@@ -27,13 +27,9 @@ const authentication = {};
 const pizzas = {};
 const latency = {};
 
-function trackAll() {
-  updateMetric(requests, 'all');
-  next();
-}
-
 function track(req, res, next) {
-  updateMetric(requests, req.method.toLowerCase())
+  updateMetric(requests,'all');
+  updateMetric(requests, req.method.toLowerCase());
   next();
 }
 
@@ -165,4 +161,4 @@ function sendToGrafana(metric, metricName) {
     });
 }
 
-module.exports = { track, trackAll, trackSuccess, trackFail, trackActive, trackPizza, trackLatency };
+module.exports = { track, trackSuccess, trackFail, trackActive, trackPizza, trackLatency };
