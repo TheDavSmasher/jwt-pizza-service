@@ -37,7 +37,11 @@ class Logger {
 
   errorLogger(err) {
     this._log('error', 'server', { message: err.message, stack: err.stack })
-  };
+  }
+
+  latencyLogger(time, path) {
+    this._log('warn', 'server', { time: time, endpoint: path })
+  }
 
   _log(level, type, logData) {
     metrics.trackLogs(level);
