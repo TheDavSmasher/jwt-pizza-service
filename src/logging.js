@@ -40,7 +40,7 @@ class Logger {
   }
 
   latencyLogger(time, path) {
-    this._log('warn', 'server', { time: time, endpoint: path })
+    this._log('warn', 'server', { res: 'Time: ' + time, path: path })
   }
 
   _log(level, type, logData) {
