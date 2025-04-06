@@ -351,7 +351,7 @@ class DB {
 
   async checkDatabaseExists(connection) {
     const [rows] = await this.query(connection, `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?`, [config.db.connection.database]);
-    return rows.schema !== undefined;
+    return rows.SCHEMA_NAME !== undefined;
   }
 }
 
