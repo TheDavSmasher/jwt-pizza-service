@@ -26,6 +26,7 @@ const requests = {};
 const authentication = {};
 const pizzas = {};
 const latency = {};
+const logs = {};
 
 function track(req, res, next) {
   updateMetric(requests,'all');
@@ -54,6 +55,10 @@ function trackPizza(metric, value) {
 
 function trackLatency(key, time) {
   latency[key] = [...latency[key] ?? [], time];
+}
+
+function trackLogs(level) {
+  updateMetric(logs, level);
 }
 
 function updateMetric(metric, key, value) {
@@ -86,6 +91,7 @@ setInterval(() => {
     builder.addNewMetric('latency', (latency[key].reduce((partial, a) => partial + a, 0)) / latency[key].length, 'sum', 'ms', { key });
     latency[key] = [];
   });
+  builder.addMetrics('log_events', logs, 'sum', '1');
 
   sendToGrafana(builder.getAllMetrics());
 }, 1000);
@@ -161,4 +167,4 @@ function sendToGrafana(metric) {
     });
 }
 
-module.exports = { track, trackSuccess, trackFail, trackActive, trackPizza, trackLatency };
+module.exports = { track, trackSuccess, trackFail, trackActive, trackPizza, trackLatency, trackLogs };

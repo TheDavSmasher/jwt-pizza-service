@@ -1,4 +1,5 @@
 const config = require('./config');
+const metrics = require("./metrics");
 
 class Logger {
   httpLogger = (req, res, next) => {
@@ -39,6 +40,7 @@ class Logger {
   };
 
   _log(level, type, logData) {
+    metrics.trackLogs(level);
     const labels = { component: config.logging.source, level: level, type: type };
     const values = [this._nowString(), this._sanitize(logData)];
     const logEvent = { streams: [{ stream: labels, values: [values] }] };
