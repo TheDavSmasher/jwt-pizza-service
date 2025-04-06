@@ -1,8 +1,8 @@
-import { sleep, check, group, fail } from 'k6'
-import http from 'k6/http'
-import jsonpath from 'https://jslib.k6.io/jsonpath/1.0.2/index.js'
+const { sleep, check, group, fail } = require('k6');
+const http = require('k6/http')
+const jsonpath = require('https://jslib.k6.io/jsonpath/1.0.2/index.js');
 
-export const options = {
+const options = {
   cloud: {
     distribution: { 'amazon:us:ashburn': { loadZone: 'amazon:us:ashburn', percent: 100 } },
     apm: [],
@@ -24,7 +24,7 @@ export const options = {
   },
 }
 
-export function scenario_1() {
+function scenario_1() {
   let response
 
   const vars = {}
@@ -178,3 +178,5 @@ export function scenario_1() {
     )
   })
 }
+
+module.exports = { options, scenario_1 };
