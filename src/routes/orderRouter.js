@@ -85,16 +85,16 @@ orderRouter.put(
   })
 );
 
-orderRouter.post('/', (req, res, next) => {
+const chaos = (req, res, next) => {
   if (enableChaos && Math.random() < 0.5) {
     throw new StatusCodeError('Chaos monkey', 500);
   }
   next();
-});
+};
 
 // createOrder
 orderRouter.post(
-  '/', authRouter.authenticateToken,
+  '/', authRouter.authenticateToken, chaos,
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
     const order = await DB.addDinerOrder(req.user, orderReq);
@@ -116,10 +116,14 @@ orderRouter.post(
       metrics.trackPizza('revenue', revenue);
       res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
     } else {
-      metrics.trackPizza('fail');
-      res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
+      throw new StatusCodeError('Failed to fulfill order at factory. Please report at: ' + j.reportUrl, 500);
+      //res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
     }
-  })
+  }),
+  (err, req, res, next) => {
+    metrics.trackPizza('fail');
+    next(err);
+  }
 );
 
 module.exports = orderRouter;
