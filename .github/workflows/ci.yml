@@ -68,6 +68,10 @@ jobs:
               url: '${{ secrets.LOGGING_URL }}',
               apiKey: '${{ secrets.LOGGING_API_KEY }}',
             },
+            admin: {
+              email: '${{ secrets.ADMIN_EMAIL }}',
+              password: '${{ secrets.ADMIN_PASSWORD }}'
+            }
           };" > src/config.js
 
       - name: Tests
