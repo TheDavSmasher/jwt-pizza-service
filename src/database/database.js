@@ -132,6 +132,15 @@ class DB {
     }
   }
 
+  async clearAuth() {
+    const connection = await this.getConnection();
+    try {
+      await this.query(connection, `DELETE FROM auth`);
+    } finally {
+      connection.end();
+    }
+  }
+
   async getOrders(user, page = 1) {
     const connection = await this.getConnection();
     try {
@@ -345,6 +354,8 @@ class DB {
           const defaultAdmin = { name: '常用名字', email: config.admin.email, password: config.admin.password, roles: [{ role: Role.Admin }] };
           this.addUser(defaultAdmin);
         }
+
+        await this.clearAuth();
       } finally {
         connection.end();
       }
