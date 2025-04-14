@@ -3,6 +3,7 @@ const app = require('../service');
 const { Role, DB } = require('../database/database.js');
 
 let adminUser
+let adminUserId
 let adminAuthToken
 let franchiseId
 let storeId
@@ -10,6 +11,7 @@ let storeId
 beforeAll(async () => {
     adminUser = await createAdminUser();
     const newAdmin = await request(app).put('/api/auth').send(adminUser);
+    adminUserId = newAdmin.body.user.id;
     adminAuthToken = newAdmin.body.token;
     expect(adminAuthToken).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 
@@ -56,7 +58,7 @@ test('order lifecycle', async () => {
 }, 10000);
 
 afterAll(async () => {
-    await DB.deleteUsers();
+    await DB.deleteUser(adminUserId);
 });
 
 async function createAdminUser() {

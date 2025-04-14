@@ -3,11 +3,13 @@ const app = require('../service');
 const { Role, DB } = require('../database/database.js');
 
 let adminUser
+let adminUserId
 let adminAuthToken
 
 beforeAll(async () => {
     adminUser = await createAdminUser();
     const newAdmin = await request(app).put('/api/auth').send(adminUser);
+    adminUserId = newAdmin.body.user.id;
     adminAuthToken = newAdmin.body.token;
     expect(adminAuthToken).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 });
@@ -57,6 +59,10 @@ test('store lifecycle', async () => {
         .set('Authorization', `Bearer ${adminAuthToken}`).send();
     expect(deleteStore.status).toBe(200);
     expect(deleteStore.body.message).toBe('store deleted');
+});
+
+afterAll(async () => {
+    await DB.deleteUser(adminUserId);
 });
 
 async function createAdminUser() {
