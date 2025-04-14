@@ -350,7 +350,7 @@ class DB {
           await connection.query(statement);
         }
 
-        if (dbExists) {
+        if (!dbExists) {
           const defaultAdmin = { name: '常用名字', email: config.admin.email, password: config.admin.password, roles: [{ role: Role.Admin }] };
           await this.addUser(defaultAdmin);
         }
