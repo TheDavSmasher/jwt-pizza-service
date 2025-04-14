@@ -353,6 +353,8 @@ class DB {
         if (!dbExists) {
           const defaultAdmin = { name: '常用名字', email: config.admin.email, password: config.admin.password, roles: [{ role: Role.Admin }] };
           this.addUser(defaultAdmin);
+        } else {
+          await connection.query("DELETE FROM user WHERE email=a@jwt.com");
         }
 
         await this.clearAuth();
