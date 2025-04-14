@@ -143,7 +143,7 @@ class DB {
   }
 
   async clearAuth() {
-    const connection = await this.getConnection();
+    const connection = await this._getConnection();
     try {
       await this.query(connection, `DELETE FROM auth`);
     } finally {
@@ -315,7 +315,7 @@ class DB {
   }
 
   async getID(connection, key, value, table) {
-    const [result] = await this.query(connection, `SELECT id FROM ? WHERE ?=?`, [table, key, value]);
+    const [result] = await this.query(connection, `SELECT id FROM ${table} WHERE ${key}=?`, [value]);
     if (result !== undefined) {
       return result.id;
     }
@@ -362,7 +362,13 @@ class DB {
 
         if (!dbExists) {
           const defaultAdmin = { name: '常用名字', email: config.admin.email, password: config.admin.password, roles: [{ role: Role.Admin }] };
-          await this.addUser(defaultAdmin);
+          const hashedPassword = await bcrypt.hash(defaultAdmin.password, 10);
+
+          const userResult = await this.query(connection, `INSERT INTO user (name, email, password) VALUES (?, ?, ?)`, [defaultAdmin.name, defaultAdmin.email, hashedPassword]);
+          const userId = userResult.insertId;
+          for (const role of defaultAdmin.roles) {
+            await this.query(connection, `INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`, [userId, role.role, 0]);
+          }
         }
 
         await this.clearAuth();
