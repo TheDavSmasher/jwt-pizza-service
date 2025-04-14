@@ -55,6 +55,11 @@ test('order lifecycle', async () => {
     expect(fetchedOrder.body.orders[0]).toMatchObject(newOrder);
 }, 10000);
 
+afterAll(async () => {
+    await DB.deleteUsers();
+    throw new Error('I want to die');
+});
+
 async function createAdminUser() {
     let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
     user.name = randomName();

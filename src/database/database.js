@@ -132,6 +132,16 @@ class DB {
     }
   }
 
+  async deleteUsers() {
+    const connection = await this.getConnection();
+    try {
+      await this.query(connection, `DELETE FROM userRole`);
+      await this.query(connection, `DELETE FROM user`);
+    } finally {
+      connection.end();
+    }
+  }
+
   async clearAuth() {
     const connection = await this.getConnection();
     try {
