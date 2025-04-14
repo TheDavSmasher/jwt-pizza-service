@@ -351,16 +351,8 @@ class DB {
         }
 
         if (dbExists) {
-          await this.query(connection, "DELETE FROM userRole");
-          await this.query(connection, "DELETE FROM user");
           const defaultAdmin = { name: '常用名字', email: config.admin.email, password: config.admin.password, roles: [{ role: Role.Admin }] };
-          const hashedPassword = await bcrypt.hash(defaultAdmin.password, 10);
-
-          const userResult = await this.query(connection, `INSERT INTO user (name, email, password) VALUES (?, ?, ?)`, [defaultAdmin.name, defaultAdmin.email, hashedPassword]);
-          const userId = userResult.insertId;
-          for (const role of defaultAdmin.roles) {
-            await this.query(connection, `INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`, [userId, role.role, 0]);
-          }
+          await this.addUser(defaultAdmin);
         }
 
         await this.clearAuth();
