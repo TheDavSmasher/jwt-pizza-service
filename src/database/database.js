@@ -133,7 +133,7 @@ class DB {
   }
 
   async deleteUsers() {
-    const connection = await this.getConnection();
+    const connection = await this._getConnection();
     try {
       await this.query(connection, `DELETE FROM userRole`);
       await this.query(connection, `DELETE FROM user`);
@@ -155,7 +155,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       const offset = this.getOffset(page, config.db.listPerPage);
-      const orders = await this.query(connection, `SELECT id, franchiseId, storeId, date FROM dinerOrder WHERE dinerId=? LIMIT ?,?`, [user.id, offset, config.db.listPerPage]);
+      const orders = await this.query(connection, `SELECT id, franchiseId, storeId, date FROM dinerOrder WHERE dinerId=? LIMIT ${offset},${config.db.listPerPage}`, [user.id]);
       for (const order of orders) {
         let items = await this.query(connection, `SELECT id, menuId, description, price FROM orderItem WHERE orderId=?`, [order.id]);
         order.items = items;

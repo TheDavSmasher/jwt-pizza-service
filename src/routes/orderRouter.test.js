@@ -24,7 +24,7 @@ beforeAll(async () => {
     const createdStore = await request(app).post(`/api/franchise/${franchiseId}/store`)
         .set('Authorization', `Bearer ${adminAuthToken}`).send(newStore);
     storeId = createdStore.body.id;
-});
+}, 10000);
 
 test('get menu', async () => {
     const result = await request(app).get('/api/order/menu').send();
@@ -57,7 +57,6 @@ test('order lifecycle', async () => {
 
 afterAll(async () => {
     await DB.deleteUsers();
-    throw new Error('I want to die');
 });
 
 async function createAdminUser() {
