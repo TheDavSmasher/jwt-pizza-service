@@ -145,8 +145,6 @@ class DB {
   async clearAuth() {
     const connection = await this._getConnection();
     try {
-      await this.query(connection, `DELETE FROM userRole`);
-      await this.query(connection, `DELETE FROM user`);
       await this.query(connection, `DELETE FROM auth`);
     } finally {
       connection.end();
@@ -364,7 +362,7 @@ class DB {
         
         await this.clearAuth();
 
-        if (dbExists) {
+        if (!dbExists) {
           const defaultAdmin = { name: '常用名字', email: config.admin.email, password: config.admin.password, roles: [{ role: Role.Admin }] };
           const hashedPassword = await bcrypt.hash(defaultAdmin.password, 10);
 
